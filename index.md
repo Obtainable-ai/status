@@ -31,5 +31,4 @@ title: Status Page
 
 <!-- Footer -->
 <footer class="mt-5">
-  <p class="text-center text-muted">&copy; 2024 Obtainable.ai. All rights reserved.</p>
 </footer>
