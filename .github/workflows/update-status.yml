@@ -1,0 +1,52 @@
+name: Update Status Page
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # Runs every 5 minutes
+  workflow_dispatch:
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Check API Status
+        run: |
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.obtainable.ai/health)
+          if [ "$API_STATUS" -eq 200 ]; then
+            echo "API is Online"
+            STATUS_COLOR="brightgreen"
+          else
+            echo "API is Offline"
+            STATUS_COLOR="red"
+          fi
+          echo "API_STATUS=${STATUS_COLOR}" >> $GITHUB_ENV
+
+      - name: Check Website Hosting Status
+        run: |
+          HOSTING_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://www.obtainable.ai/health)
+          if [ "$HOSTING_STATUS" -eq 200 ]; then
+            echo "Website Hosting is Online"
+            HOSTING_COLOR="brightgreen"
+          else
+            echo "Website Hosting is Offline"
+            HOSTING_COLOR="red"
+          fi
+          echo "HOSTING_COLOR=${HOSTING_COLOR}" >> $GITHUB_ENV
+
+      - name: Update README.md
+        run: |
+          sed -i "s|!\\[API Status\\](https://img.shields.io/badge/API-.*-brightgreen)|![API Status](https://img.shields.io/badge/API-${API_STATUS})|" index.md
+          sed -i "s|!\\[Website Hosting Status\\](https://img.shields.io/badge/Hosting-.*-brightgreen)|![Website Hosting Status](https://img.shields.io/badge/Hosting-${HOSTING_COLOR})|" index.md
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.md
+          git commit -m "Update service statuses"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
