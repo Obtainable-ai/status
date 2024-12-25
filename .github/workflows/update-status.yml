@@ -1,9 +1,9 @@
 name: Update Status Page
 
-on:
-  schedule:
-    - cron: '*/5 * * * *' # Runs every 5 minutes
-  workflow_dispatch:
+#on:
+#  schedule:
+#  - cron: '*/5 * * * *' 
+#  workflow_dispatch:
 
 jobs:
   update-status:
